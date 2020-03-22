@@ -149,13 +149,17 @@ def init_vao():
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_ebo)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
+
     glBindBuffer(GL_ARRAY_BUFFER, 0)
     glBindVertexArray(0)
 
 def draw_quad():
     glBindVertexArray(vertex_vao)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_ebo)
     # glDrawArrays(GL_TRIANGLES, 0, 6)
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0)
+     # wip here!
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, None)
     glBindVertexArray(0)
 
 def render():
