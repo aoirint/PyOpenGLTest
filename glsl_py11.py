@@ -1,6 +1,17 @@
 '''
-Image with shader
+## Image with shader
 
+### Requirements
+
+PyOpenGL==3.1.5
+glfw==1.11.0
+
+Vendor : b'Intel Inc.'
+GPU : b'Intel Iris OpenGL Engine'
+OpenGL version : b'4.1 INTEL-14.4.23'
+
+
+[床井研究室 - 第２回 テクスチャの割り当て](marina.sys.wakayama-u.ac.jp/~tokoi/?date=20040914)
 '''
 
 import sys
@@ -14,7 +25,6 @@ vertex_shader_text = '''
 #version 410 core
 
 in vec3 vPosition;
-in vec2 vTextureVertex;
 out vec2 vTextureCoord;
 
 void main(void) {
@@ -32,7 +42,6 @@ out vec4 flagColor;
 
 void main(void) {
     flagColor = texture(vTexture, vTextureCoord).rgba;
-    // flagColor = vec4(vTextureCoord.x, 0.0, vTextureCoord.y, 1.0);
 }
 '''
 
@@ -70,13 +79,9 @@ def init_texture():
 
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-    # glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
 
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, img_gl)
-
-    # glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
-    # glGenerateMipMap(GL_TEXTURE_2D)
 
 def init_shader():
     print('Initializing shader..')
@@ -118,9 +123,9 @@ def init_shader():
         print('Shader program is OK')
 
 def init_vao():
-    print('Initializing vbo..')
+    print('Initializing vao..')
 
-    # clockwise
+    # anti-clockwise
     vertices = np.array([
         -1.0, -1.0, 0.0, # left bottom
         1.0, -1.0, 0.0, # right bottom
@@ -131,22 +136,8 @@ def init_vao():
         1.0, 1.0, 0.0, # right top
     ], dtype=np.float32)
 
-    texture_vertices = np.array([
-        0.0, 1.0,
-        1.0, 1.0,
-        0.0, 0.0,
-
-        0.0, 1.0,
-        1.0, 1.0,
-        0.0, 0.0,
-    ], dtype=np.float32)
-
-
     global vertex_vbo
     vertex_vbo = glGenBuffers(1)
-
-    global texture_vertex_vbo
-    texture_vertex_vbo = glGenBuffers(1)
 
     global vertex_vao
     vertex_vao = glGenVertexArrays(1)
@@ -158,31 +149,16 @@ def init_vao():
     glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
     glVertexAttribPointer(0, 3, GL_FLOAT, False, 0, None)
 
-    glEnableVertexAttribArray(1)
-
-    glBindBuffer(GL_ARRAY_BUFFER, texture_vertex_vbo)
-    glBufferData(GL_ARRAY_BUFFER, texture_vertices.nbytes, texture_vertices, GL_STATIC_DRAW)
-    glVertexAttribPointer(1, 2, GL_FLOAT, False, 0, None)
-
-    glBindVertexArray(0)
-
-def draw_quad():
-    glBindVertexArray(vertex_vao)
-    glDrawArrays(GL_TRIANGLES, 0, 6)
     glBindVertexArray(0)
 
 def render():
-    # glEnable(GL_TEXTURE)
-    # glBindTexture(GL_TEXTURE_2D, 0)
     glUseProgram(program)
 
-    # glActiveTexture(GL_TEXTURE0)
-    # glBindTexture(GL_TEXTURE_2D, texture)
+    glUniform1i(glGetUniformLocation(program, 'vTexture'), 0)
 
-    location = glGetUniformLocation(program, 'vTexture')
-    glUniform1i(location, 0)
-
-    draw_quad()
+    glBindVertexArray(vertex_vao)
+    glDrawArrays(GL_TRIANGLES, 0, 6)
+    glBindVertexArray(0)
 
 if __name__ == '__main__':
     init_context()
