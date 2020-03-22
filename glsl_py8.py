@@ -124,16 +124,14 @@ def init_vao():
 
     indices = np.array([
         0, 1, 2,
-        3, 4, 5,
+        # 3, 4, 5,
     ], dtype=np.uint)
 
 
     global vertex_vbo
     vertex_vbo = glGenBuffers(1)
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo)
-    glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0)
+    global index_ebo
+    index_ebo = glGenBuffers(1)
 
     global vertex_vao
     vertex_vao = glGenVertexArrays(1)
@@ -142,16 +140,12 @@ def init_vao():
     glEnableVertexAttribArray(0)
 
     glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo)
+    glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
     glVertexAttribPointer(0, 3, GL_FLOAT, False, 0, None)
 
-    global index_ebo
-    index_ebo = glGenBuffers(1)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_ebo)
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
 
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0)
-
-    glBindBuffer(GL_ARRAY_BUFFER, 0)
     glBindVertexArray(0)
 
 def draw_quad():
