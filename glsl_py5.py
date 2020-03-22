@@ -46,30 +46,29 @@ def init_context():
     print('GPU :', glGetString(GL_RENDERER))
     print('OpenGL version :', glGetString(GL_VERSION))
 
-def init_texture():
-    print('Initializing texture..')
-
-    img = cv2.imread('lena.png', 1)
-    img_gl = cv2.cvtColor(img, 0, cv2.COLOR_BGR2RGB)
-
-    global width, height
-    height, width = img.shape[:2]
-
-    glActiveTexture(GL_TEXTURE0)
-    texture = glGenTextures(1)
-    glGenTextures(GL_TEXTURE_2D, texture)
-
-    glBindTexture(GL_TEXTURE_2D, texture)
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, img_gl)
-
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-
-    # glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
-    # glGenerateMipMap(GL_TEXTURE_2D)
-
-    return texture
+# def init_texture():
+#     print('Initializing texture..')
+#
+#     img = cv2.imread('lena.png', 1)
+#     img_gl = cv2.cvtColor(img, 0, cv2.COLOR_BGR2RGB)
+#
+#     global width, height
+#     height, width = img.shape[:2]
+#
+#     glActiveTexture(GL_TEXTURE0)
+#     texture = glGenTextures(1)
+#
+#     glBindTexture(GL_TEXTURE_2D, texture)
+#     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
+#     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, img_gl)
+#
+#     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+#     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+#
+#     # glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
+#     # glGenerateMipMap(GL_TEXTURE_2D)
+#
+#     return texture
 
 def init_shader():
     print('Initializing shader..')
@@ -155,7 +154,6 @@ def render():
 
 if __name__ == '__main__':
     init_context()
-    init_texture()
     init_shader()
     init_vao()
 

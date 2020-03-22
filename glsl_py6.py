@@ -57,7 +57,6 @@ def init_context():
 #
 #     glActiveTexture(GL_TEXTURE0)
 #     texture = glGenTextures(1)
-#     glGenTextures(GL_TEXTURE_2D, texture)
 #
 #     glBindTexture(GL_TEXTURE_2D, texture)
 #     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
