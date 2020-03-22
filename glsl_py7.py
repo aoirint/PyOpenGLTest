@@ -1,3 +1,6 @@
+'''
+Quad with dynamic color
+'''
 
 import sys
 from OpenGL.GL import *

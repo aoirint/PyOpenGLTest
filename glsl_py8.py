@@ -1,5 +1,7 @@
 '''
-Triangle (Left top)
+Soft EBO
+
+[Element Array Bufferによる描画を行う - Qiita](https://qiita.com/y_UM4/items/8b87e82c66c185905553)
 '''
 
 import sys
@@ -9,47 +11,26 @@ import numpy as np
 import cv2
 
 
-# vertex_shader_text = '''
-# #version 410 core
-#
-# layout(location = 0) in vec3 vPosition;
-# layout(location = 1) in vec2 vTextureCoord;
-# out vec2 fTextureCoord;
-#
-# void main(void) {
-#     fTextureCoord = vTextureCoord.xy;
-#     gl_Position = vec4(vPosition, 1.0);
-# }
-# '''
 vertex_shader_text = '''
 #version 410 core
 
 in vec3 vPosition;
+out vec2 vTextureCoord;
 
 void main(void) {
+    vTextureCoord = vPosition.xy;
     gl_Position = vec4(vPosition, 1.0);
 }
 '''
 
-# fragment_shader_text = '''
-# #version 410 core
-#
-# uniform sampler2D vTexture;
-# in vec2 fTextureCoord;
-#
-# out vec4 flagColor;
-#
-# void main(void) {
-#     flagColor = texture(vTexture, fTextureCoord).bgra;
-# }
-# '''
 fragment_shader_text = '''
 #version 410 core
 
+in vec2 vTextureCoord;
 out vec4 flagColor;
 
 void main(void) {
-    flagColor = vec4(0.5, 0.0, 0.5, 1.0);
+    flagColor = vec4(vTextureCoord.x, 0.0, vTextureCoord.y, 1.0);
 }
 '''
 
@@ -63,7 +44,7 @@ def init_context():
     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
 
     global window
-    window = glfw.create_window(640, 480, 'My Window', None, None)
+    window = glfw.create_window(512, 512, __file__, None, None)
     glfw.make_context_current(window)
 
     print('Vendor :', glGetString(GL_VENDOR))
@@ -79,20 +60,14 @@ def init_context():
 #     global width, height
 #     height, width = img.shape[:2]
 #
-#     glActiveTexture(GL_TEXTURE0)
+#     global texture
+#     print('generating')
 #     texture = glGenTextures(1)
-#
-#     glBindTexture(GL_TEXTURE_2D, texture)
 #     glPixelStorei(GL_UNPACK_ALIGNMENT, 1)
 #     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, img_gl)
 #
-#     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
-#     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
-#
 #     # glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL)
 #     # glGenerateMipMap(GL_TEXTURE_2D)
-#
-#     return texture
 
 def init_shader():
     print('Initializing shader..')
@@ -134,41 +109,65 @@ def init_shader():
         print('Shader program is OK')
 
 def init_vao():
-    print('Initializing vao..')
+    print('Initializing vbo..')
 
+    # clockwise
     vertices = np.array([
-        -1.0, -1.0, 0.0,
-        -1.0, 1.0, 0.0,
-        1.0, 1.0, 0.0,
-        1.0, -1.0, 0.0,
+        1.0, 1.0, 0.0, # right top
+        1.0, -1.0, 0.0, # right bottom
+        -1.0, -1.0, 0.0, # left bottom
+
+        -1.0, 1.0, 0.0, # left top
+        1.0, 1.0, 0.0, # right top
+        -1.0, -1.0, 0.0, # left bottom
     ], dtype=np.float32)
 
-    colors = np.array([
-        0.0, 0.0,
-        0.0, height,
-        width, height,
-        width, 0.0,
-    ], dtype=np.float32)
+    indices = np.array([
+        0, 1, 2,
+        3, 4, 5,
+    ], dtype=np.uint)
 
-    vertex_buffer = glGenBuffers(1)
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer)
+
+    global vertex_vbo
+    vertex_vbo = glGenBuffers(1)
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo)
     glBufferData(GL_ARRAY_BUFFER, vertices.nbytes, vertices, GL_STATIC_DRAW)
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0)
 
     global vertex_vao
     vertex_vao = glGenVertexArrays(1)
     glBindVertexArray(vertex_vao)
+
     glEnableVertexAttribArray(0)
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_vao)
+
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_vbo)
     glVertexAttribPointer(0, 3, GL_FLOAT, False, 0, None)
+
+    global index_ebo
+    index_ebo = glGenBuffers(1)
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, index_ebo)
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.nbytes, indices, GL_STATIC_DRAW)
+
+    glBindBuffer(GL_ARRAY_BUFFER, 0)
+    glBindVertexArray(0)
 
 def draw_quad():
     glBindVertexArray(vertex_vao)
-    glDrawArrays(GL_TRIANGLES, 0, 3)
+    # glDrawArrays(GL_TRIANGLES, 0, 6)
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0)
+    glBindVertexArray(0)
 
 def render():
     # glEnable(GL_TEXTURE)
     # glBindTexture(GL_TEXTURE_2D, 0)
     glUseProgram(program)
+
+    # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+    # glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+    #
+    # glActiveTexture(GL_TEXTURE0)
+    # glBindTexture(GL_TEXTURE_2D, texture)
 
     # location = glGetUniformLocation(program, 'vTexture')
     # glUniform1i(location, 1)
@@ -177,6 +176,7 @@ def render():
 
 if __name__ == '__main__':
     init_context()
+    # init_texture()
     init_shader()
     init_vao()
 
